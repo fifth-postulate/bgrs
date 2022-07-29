@@ -8,14 +8,14 @@ main =
         board =
             Board
                 { stones =
-                    [ ( 1, Red, 2 )
-                    , ( 6, Blue, 5 )
-                    , ( 8, Blue, 3 )
-                    , ( 12, Red, 5 )
-                    , ( 13, Blue, 5 )
-                    , ( 18, Red, 3 )
-                    , ( 20, Red, 5 )
-                    , ( 24, Blue, 2 )
+                    [ ( 1, Alpha, 2 )
+                    , ( 6, Omega, 5 )
+                    , ( 8, Omega, 3 )
+                    , ( 12, Alpha, 5 )
+                    , ( 13, Omega, 5 )
+                    , ( 18, Alpha, 3 )
+                    , ( 20, Alpha, 5 )
+                    , ( 24, Omega, 2 )
                     ]
                 }
     in
