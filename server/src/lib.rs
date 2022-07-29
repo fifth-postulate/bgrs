@@ -1,3 +1,5 @@
+pub mod id;
+
 #[cfg(test)]
 mod tests {
     #[test]
