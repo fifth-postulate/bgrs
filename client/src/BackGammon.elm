@@ -9,7 +9,7 @@ import Svg.Transform as Transform exposing (Transform)
 
 type Board
     = Board
-        { stones : List ( Point, Player, Nat )
+        { checkers : List ( Point, Player, Nat )
         }
 
 
@@ -27,9 +27,25 @@ type alias Nat =
 
 
 view : Board -> Svg msg
-view (Board { stones }) =
-    Svg.svg [ Attribute.width "840px", Attribute.height "440px", Attribute.viewBox "0 0 14 12" ]
-        [ background ]
+view aBoard =
+    let
+        dimension =
+            60
+
+        width =
+            14 * dimension
+
+        height =
+            12 * dimension
+
+        px : Int -> String
+        px n =
+            String.fromInt n ++ "px"
+    in
+    Svg.svg [ Attribute.width <| px width, Attribute.height <| px height, Attribute.viewBox "0 0 14 12" ]
+        [ background
+        , checkers aBoard
+        ]
 
 
 background : Svg msg
@@ -59,17 +75,20 @@ right =
 board : Transform -> Svg msg
 board transform =
     Svg.g [ Attribute.transform <| Transform.toString transform ]
-        [ felt 
-        , halfBoard <| Transform.identity 
-        , halfBoard <| Transform.sequence [Transform.translate 6 11, Transform.flipX, Transform.flipY] 
+        [ felt
+        , halfBoard <| Transform.identity
+        , halfBoard <| Transform.sequence [ Transform.translate 6 11, Transform.flipX, Transform.flipY ]
         ]
+
 
 felt : Svg msg
 felt =
     let
-        color = Color.byName Green
+        color =
+            Color.byName Green
     in
-    Svg.rect [Attribute.width "6", Attribute.height "11", Attribute.fill <| Color.toString color] []
+    Svg.rect [ Attribute.width "6", Attribute.height "11", Attribute.fill <| Color.toString color ] []
+
 
 halfBoard : Transform -> Svg msg
 halfBoard transform =
@@ -81,8 +100,6 @@ halfBoard transform =
         , point (Color.byName White) <| Transform.translate 4 0
         , point (Color.byName Black) <| Transform.translate 5 0
         ]
-
-
 
 
 point : Color -> Transform -> Svg msg
@@ -101,3 +118,58 @@ point color transform =
     in
     Svg.polygon [ Attribute.transform <| Transform.toString transform, Attribute.points points, Attribute.fill <| Color.toString color ]
         []
+
+
+checkers : Board -> Svg msg
+checkers (Board b) =
+    Svg.g [] <| List.map checkerStack b.checkers
+
+
+checkerStack : ( Point, Player, Nat ) -> Svg msg
+checkerStack ( p, player, n ) =
+    let
+        color =
+            case player of
+                Alpha ->
+                    Color.byName Color.Red
+
+                Omega ->
+                    Color.byName Color.Blue
+
+        transform =
+            if p <= 6 then
+                Transform.translate (toFloat <| p - 1) 0
+
+            else if p <= 12 then
+                Transform.translate (toFloat p) 0
+
+            else if p <= 18 then
+                Transform.sequence [ Transform.translate 13 12, Transform.flipX, Transform.flipY, Transform.translate (toFloat <| p - 13 - 1) 0 ]
+
+            else
+                Transform.sequence [ Transform.translate 13 12, Transform.flipX, Transform.flipY, Transform.translate (toFloat <| p - 13) 0 ]
+    in
+    List.range 1 n
+        |> List.map checker
+        |> Svg.g [ Attribute.transform <| Transform.toString transform, Attribute.fill <| Color.toString color ]
+
+
+checker : Nat -> Svg msg
+checker n =
+    let
+        cx =
+            String.fromFloat 1
+
+        cy =
+            String.fromFloat <| toFloat n
+
+        radius =
+            String.fromFloat 0.475
+
+        strokeWidth =
+            String.fromFloat <| 1.0 / 25.0
+
+        color =
+            Color.byName Black
+    in
+    Svg.circle [ Attribute.cx cx, Attribute.cy cy, Attribute.r radius, Attribute.stroke <| Color.toString color, Attribute.strokeWidth strokeWidth ] []

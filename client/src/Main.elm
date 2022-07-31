@@ -7,7 +7,7 @@ main =
     let
         board =
             Board
-                { stones =
+                { checkers =
                     [ ( 1, Alpha, 2 )
                     , ( 6, Omega, 5 )
                     , ( 8, Omega, 3 )

@@ -1,4 +1,4 @@
-module Svg.Transform exposing (Transform, identity, sequence, toString, translate, flipX, flipY)
+module Svg.Transform exposing (Transform, flipX, flipY, identity, sequence, toString, translate)
 
 
 type Transform
@@ -21,6 +21,7 @@ translate =
 flipX : Transform
 flipX =
     Scale -1 1
+
 
 flipY : Transform
 flipY =
