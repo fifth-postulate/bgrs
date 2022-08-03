@@ -1,7 +1,7 @@
 module BackGammon exposing (..)
 
 import String exposing (left)
-import Svg exposing (Svg, a)
+import Svg exposing (Svg)
 import Svg.Attributes as Attribute
 import Svg.Color as Color exposing (Color, Name(..))
 import Svg.Transform as Transform exposing (Transform)
