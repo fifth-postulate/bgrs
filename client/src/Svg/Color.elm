@@ -10,7 +10,10 @@ type Name
     | Blue
     | White
     | Black
+    | DarkGray
+    | Gray
     | Green
+    | LightGray
 
 
 byName : Name -> Color
@@ -40,5 +43,31 @@ nameToString name =
         Black ->
             "black"
 
+        DarkGray ->
+            grayPercentage 30
+
+        Gray ->
+            grayPercentage 50
+
         Green ->
             "green"
+        
+        LightGray ->
+            grayPercentage 80
+
+grayPercentage: Int -> String
+grayPercentage percentage =
+    rgbPercentage percentage percentage percentage
+
+rgbPercentage: Int -> Int -> Int -> String
+rgbPercentage r b g =
+    let
+        toPercentage v =
+            String.fromInt v ++ "%"
+
+        values = 
+            [r, g, b]
+            |> List.map toPercentage
+            |> String.join ", "
+    in
+        "rgb(" ++ values ++ ")" 

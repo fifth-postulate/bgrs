@@ -131,10 +131,10 @@ checkerStack ( p, player, n ) =
         color =
             case player of
                 Alpha ->
-                    Color.byName Color.Red
+                    Color.byName Color.LightGray
 
                 Omega ->
-                    Color.byName Color.Blue
+                    Color.byName Color.DarkGray
 
         transform =
             if p <= 6 then
