@@ -51,23 +51,25 @@ nameToString name =
 
         Green ->
             "green"
-        
+
         LightGray ->
             grayPercentage 80
 
-grayPercentage: Int -> String
+
+grayPercentage : Int -> String
 grayPercentage percentage =
     rgbPercentage percentage percentage percentage
 
-rgbPercentage: Int -> Int -> Int -> String
+
+rgbPercentage : Int -> Int -> Int -> String
 rgbPercentage r b g =
     let
         toPercentage v =
             String.fromInt v ++ "%"
 
-        values = 
-            [r, g, b]
-            |> List.map toPercentage
-            |> String.join ", "
+        values =
+            [ r, g, b ]
+                |> List.map toPercentage
+                |> String.join ", "
     in
-        "rgb(" ++ values ++ ")" 
+    "rgb(" ++ values ++ ")"
