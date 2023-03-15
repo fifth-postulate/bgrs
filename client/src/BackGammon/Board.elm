@@ -6,6 +6,7 @@ import String exposing (left)
 import Svg exposing (Svg)
 import Svg.Attributes as Attribute
 import Svg.Color as Color exposing (Color, Name(..))
+import Svg.Length exposing (px)
 import Svg.Transform as Transform exposing (Transform)
 
 
@@ -70,10 +71,6 @@ view aBoard =
 
         height =
             12 * dimension
-
-        px : Int -> String
-        px n =
-            String.fromInt n ++ "px"
     in
     Svg.svg [ Attribute.width <| px width, Attribute.height <| px height, Attribute.viewBox "0 0 14 12" ]
         [ background
