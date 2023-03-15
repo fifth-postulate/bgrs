@@ -11,6 +11,7 @@ type Name
     | White
     | Black
     | DarkGray
+    | GoldenRod
     | Gray
     | Green
     | LightGray
@@ -48,6 +49,9 @@ nameToString name =
 
         Gray ->
             grayPercentage 50
+
+        GoldenRod ->
+            "goldenrod"
 
         Green ->
             "green"

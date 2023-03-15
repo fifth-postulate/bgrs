@@ -1,5 +1,7 @@
 module BackGammon.Board exposing (Board, empty, initial, view)
 
+import Array
+import BackGammon.Board.Style exposing (Style)
 import BackGammon.Id.Position exposing (Key)
 import BackGammon.Player exposing (Player(..))
 import String exposing (left)
@@ -60,83 +62,117 @@ fromKey key =
     empty
 
 
-view : Board -> Svg msg
-view aBoard =
+view : Style -> Board -> Svg msg
+view style aBoard =
     let
         dimension =
             60
 
         width =
-            14 * dimension
+            px <| standard.width * dimension
 
         height =
-            12 * dimension
+            px <| standard.height * dimension
+
+        viewbox =
+            [ 0, 0, standard.width, standard.height ]
+                |> List.map String.fromInt
+                |> String.join " "
     in
-    Svg.svg [ Attribute.width <| px width, Attribute.height <| px height, Attribute.viewBox "0 0 14 12" ]
-        [ background
-        , checkers aBoard
+    Svg.svg
+        [ Attribute.width width
+        , Attribute.height height
+        , Attribute.viewBox viewbox
+        ]
+        [ background style
+        , checkers style aBoard
         ]
 
 
-background : Svg msg
-background =
+standard : Dimensions
+standard =
+    { width = 14, height = 12 }
+
+
+type alias Dimensions =
+    { width : Int
+    , height : Int
+    }
+
+
+background : Style -> Svg msg
+background style =
     Svg.g []
-        [ enclosure
-        , left
-        , right
+        [ enclosure style
+        , outerBoard style
+        , homeBoard style
         ]
 
 
-enclosure : Svg msg
-enclosure =
-    Svg.rect [ Attribute.width "14", Attribute.height "12", Attribute.fill "goldenrod" ] []
+enclosure : Style -> Svg msg
+enclosure style =
+    Svg.rect
+        [ Attribute.width <| String.fromInt standard.width
+        , Attribute.height <| String.fromInt standard.height
+        , Attribute.fill <| Color.toString style.enclosure
+        ]
+        []
 
 
-left : Svg msg
-left =
-    board <| Transform.translate 0.5 0.5
+outerBoard : Style -> Svg msg
+outerBoard style =
+    board style <| Transform.translate 0.5 0.5
 
 
-right : Svg msg
-right =
-    board <| Transform.translate 7.5 0.5
+homeBoard : Style -> Svg msg
+homeBoard style =
+    board style <| Transform.translate 7.5 0.5
 
 
-board : Transform -> Svg msg
-board transform =
+board : Style -> Transform -> Svg msg
+board style transform =
     Svg.g [ Attribute.transform <| Transform.toString transform ]
-        [ felt
-        , halfBoard <| Transform.identity
-        , halfBoard <| Transform.sequence [ Transform.translate 6 11, Transform.flipX, Transform.flipY ]
+        [ felt style
+        , halfBoard style <| Transform.identity
+        , halfBoard style <| Transform.sequence [ Transform.translate 6 11, Transform.flipX, Transform.flipY ]
         ]
 
 
-felt : Svg msg
-felt =
+felt : Style -> Svg msg
+felt style =
+    Svg.rect
+        [ Attribute.width <| String.fromInt 6
+        , Attribute.height <| String.fromInt 11
+        , Attribute.fill <| Color.toString style.felt
+        ]
+        []
+
+
+halfBoard : Style -> Transform -> Svg msg
+halfBoard style transform =
     let
-        color =
-            Color.byName Green
+        pointColor index =
+            style.point
+                |> Array.get (modBy 2 index)
+                |> Maybe.withDefault (Color.byName Red)
+
+        toPoint ( index, dx ) =
+            point (pointColor index) <| Transform.translate dx 0
     in
-    Svg.rect [ Attribute.width "6", Attribute.height "11", Attribute.fill <| Color.toString color ] []
-
-
-halfBoard : Transform -> Svg msg
-halfBoard transform =
-    Svg.g [ Attribute.transform <| Transform.toString transform ]
-        [ point (Color.byName White) <| Transform.translate 0 0
-        , point (Color.byName Black) <| Transform.translate 1 0
-        , point (Color.byName White) <| Transform.translate 2 0
-        , point (Color.byName Black) <| Transform.translate 3 0
-        , point (Color.byName White) <| Transform.translate 4 0
-        , point (Color.byName Black) <| Transform.translate 5 0
-        ]
+    List.range 0 5
+        |> List.map toFloat
+        |> List.indexedMap Tuple.pair
+        |> List.map toPoint
+        |> Svg.g [ Attribute.transform <| Transform.toString transform ]
 
 
 point : Color -> Transform -> Svg msg
 point color transform =
     let
         toString ( x, y ) =
-            [ String.fromFloat x, ",", String.fromFloat y ] |> String.join ""
+            [ x, y ]
+                |> List.map String.fromFloat
+                |> String.join ","
 
         points =
             [ ( 0, 0 )
@@ -150,24 +186,24 @@ point color transform =
         []
 
 
-checkers : Board -> Svg msg
-checkers (Board b) =
+checkers : Style -> Board -> Svg msg
+checkers style (Board b) =
     Svg.g []
-        [ Svg.g [] <| List.map (checkerStack Alpha) b.alpha
-        , Svg.g [] <| List.map (checkerStack Omega) b.omega
+        [ Svg.g [] <| List.map (checkerStack style Alpha) b.alpha
+        , Svg.g [] <| List.map (checkerStack style Omega) b.omega
         ]
 
 
-checkerStack : Player -> ( Point, Nat ) -> Svg msg
-checkerStack player ( index, n ) =
+checkerStack : Style -> Player -> ( Point, Nat ) -> Svg msg
+checkerStack style player ( index, n ) =
     let
         color =
             case player of
                 Alpha ->
-                    Color.byName Color.LightGray
+                    style.alpha
 
                 Omega ->
-                    Color.byName Color.DarkGray
+                    style.omega
 
         p =
             case player of
@@ -177,7 +213,7 @@ checkerStack player ( index, n ) =
                 Omega ->
                     25 - index
 
-        transform =
+        checkerPlacement =
             if p <= 6 then
                 Transform.translate (toFloat <| p - 1) 0
 
@@ -189,6 +225,9 @@ checkerStack player ( index, n ) =
 
             else
                 Transform.sequence [ Transform.translate 13 12, Transform.flipX, Transform.flipY, Transform.translate (toFloat <| p - 13) 0 ]
+
+        transform =
+            Transform.sequence [ Transform.translate 14 0, Transform.flipX, checkerPlacement ]
     in
     List.range 1 n
         |> List.map checker
@@ -213,4 +252,11 @@ checker n =
         color =
             Color.byName Black
     in
-    Svg.circle [ Attribute.cx cx, Attribute.cy cy, Attribute.r radius, Attribute.stroke <| Color.toString color, Attribute.strokeWidth strokeWidth ] []
+    Svg.circle
+        [ Attribute.cx cx
+        , Attribute.cy cy
+        , Attribute.r radius
+        , Attribute.stroke <| Color.toString color
+        , Attribute.strokeWidth strokeWidth
+        ]
+        []
