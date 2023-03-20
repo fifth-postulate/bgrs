@@ -1,4 +1,4 @@
-module BackGammon exposing (..)
+module BackGammon exposing (placeholder)
 
 
 placeholder : Int

@@ -1,9 +1,8 @@
 module Bit.Pattern exposing (Pattern, encoder)
 
-import Bit exposing (Bit(..))
+import Bit exposing (Bit)
 import Bytes exposing (Endianness(..))
 import Bytes.Encode as Encode exposing (Encoder)
-import Html.Attributes exposing (pattern)
 
 
 type alias Pattern =
