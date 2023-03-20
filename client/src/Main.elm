@@ -1,8 +1,25 @@
 module Main exposing (..)
 
-import BackGammon.Board as Board
+import BackGammon.Board as Board exposing (Board)
 import BackGammon.Board.Style exposing (default)
+import BackGammon.Id.Position as Position
+import BackGammon.Player exposing (Player(..))
+import Html exposing (Html)
 
 
 main =
-    Board.view default Board.initial
+    view Board.initial
+
+
+view : Board -> Html msg
+view board =
+    let
+        position =
+            board
+                |> Board.toKey Alpha
+                |> Position.encode
+    in
+    Html.div []
+        [ Html.div [] [ Html.span [] [ Html.text position ] ]
+        , Board.view default board
+        ]

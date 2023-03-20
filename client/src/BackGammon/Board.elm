@@ -1,10 +1,14 @@
-module BackGammon.Board exposing (Board, empty, initial, view)
+module BackGammon.Board exposing (Board, empty, initial, toKey, view)
 
 import Array
 import BackGammon.Board.Style exposing (Style)
 import BackGammon.Id.Position exposing (Key)
 import BackGammon.Player exposing (Player(..))
-import String exposing (left)
+import Bit
+import Bit.Pattern as Pattern exposing (Pattern)
+import Bytes exposing (Endianness(..))
+import Bytes.Encode exposing (encode)
+import Dict exposing (Dict)
 import Svg exposing (Svg)
 import Svg.Attributes as Attribute
 import Svg.Color as Color exposing (Color, Name(..))
@@ -14,39 +18,39 @@ import Svg.Transform as Transform exposing (Transform)
 
 type Board
     = Board
-        { alpha : List ( Point, Nat )
-        , omega : List ( Point, Nat )
+        { alpha : Dict Point Nat
+        , omega : Dict Point Nat
         }
 
 
 empty : Board
 empty =
-    Board { alpha = [], omega = [] }
+    Board { alpha = Dict.empty, omega = Dict.empty }
 
 
 initial : Board
 initial =
     empty
-        |> checkersAt Alpha 24 2
-        |> checkersAt Alpha 13 5
-        |> checkersAt Alpha 8 3
-        |> checkersAt Alpha 6 5
-        |> checkersAt Omega 24 2
-        |> checkersAt Omega 13 5
-        |> checkersAt Omega 8 3
-        |> checkersAt Omega 6 5
+        |> placeCheckersAt Alpha 24 2
+        |> placeCheckersAt Alpha 13 5
+        |> placeCheckersAt Alpha 8 3
+        |> placeCheckersAt Alpha 6 5
+        |> placeCheckersAt Omega 24 2
+        |> placeCheckersAt Omega 13 5
+        |> placeCheckersAt Omega 8 3
+        |> placeCheckersAt Omega 6 5
 
 
-checkersAt : Player -> Point -> Nat -> Board -> Board
-checkersAt player p n (Board b) =
+placeCheckersAt : Player -> Point -> Nat -> Board -> Board
+placeCheckersAt player p n (Board b) =
     case player of
         Alpha ->
             Board
-                { b | alpha = ( p, n ) :: b.alpha }
+                { b | alpha = Dict.insert p n b.alpha }
 
         Omega ->
             Board
-                { b | omega = ( p, n ) :: b.omega }
+                { b | omega = Dict.insert p n b.omega }
 
 
 type alias Point =
@@ -57,9 +61,48 @@ type alias Nat =
     Int
 
 
-fromKey : Key -> Board
-fromKey key =
+fromKey : Player -> Key -> Board
+fromKey current key =
     empty
+
+
+toKey : Player -> Board -> Key
+toKey current (Board { alpha, omega }) =
+    let
+        cs =
+            case current of
+                Alpha ->
+                    [ alpha, omega ]
+
+                Omega ->
+                    [ omega, alpha ]
+    in
+    cs
+        |> List.concatMap toPattern
+        |> Pattern.encoder LE
+        |> encode
+
+
+toPattern : Dict Point Nat -> Pattern
+toPattern cs =
+    let
+        checkersAt index =
+            Dict.get index cs
+                |> Maybe.withDefault 0
+
+        run count =
+            0
+                :: List.repeat count 1
+                |> List.reverse
+
+        toBit b =
+            Bit.fromInt b
+                |> Maybe.withDefault Bit.zero
+    in
+    List.range 1 25
+        |> List.map checkersAt
+        |> List.concatMap run
+        |> List.map toBit
 
 
 view : Style -> Board -> Svg msg
@@ -189,8 +232,8 @@ point color transform =
 checkers : Style -> Board -> Svg msg
 checkers style (Board b) =
     Svg.g []
-        [ Svg.g [] <| List.map (checkerStack style Alpha) b.alpha
-        , Svg.g [] <| List.map (checkerStack style Omega) b.omega
+        [ Svg.g [] <| List.map (checkerStack style Alpha) <| Dict.toList b.alpha
+        , Svg.g [] <| List.map (checkerStack style Omega) <| Dict.toList b.omega
         ]
 
 
