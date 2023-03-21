@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import BackGammon.Board as Board exposing (Board)
 import BackGammon.Board.Style exposing (default)

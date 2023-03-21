@@ -1,4 +1,4 @@
-module Bit exposing (Bit, fromInt, one, toInt, zero)
+module Bit exposing (Bit(..), fromInt, one, toInt, zero)
 
 
 type Bit

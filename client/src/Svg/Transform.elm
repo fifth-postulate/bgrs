@@ -46,7 +46,7 @@ toString transform =
             , String.fromFloat y
             , ")"
             ]
-                |> String.join ""
+                |> String.concat
 
         Translate x y ->
             [ "translate("
@@ -55,7 +55,7 @@ toString transform =
             , String.fromFloat y
             , ")"
             ]
-                |> String.join ""
+                |> String.concat
 
         Sequence transforms ->
             List.map toString transforms

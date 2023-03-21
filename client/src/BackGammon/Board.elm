@@ -1,12 +1,13 @@
-module BackGammon.Board exposing (Board, empty, initial, toKey, view)
+module BackGammon.Board exposing (Board, Error(..), empty, fromKey, initial, toKey, view)
 
 import Array
 import BackGammon.Board.Style exposing (Style)
-import BackGammon.Id.Position exposing (Key)
-import BackGammon.Player exposing (Player(..))
-import Bit
+import BackGammon.Id.Position as Id exposing (Key)
+import BackGammon.Player as Player exposing (Player(..))
+import Bit exposing (Bit(..))
 import Bit.Pattern as Pattern exposing (Pattern)
 import Bytes exposing (Endianness(..))
+import Bytes.Decode exposing (decode)
 import Bytes.Encode exposing (encode)
 import Dict exposing (Dict)
 import Svg exposing (Svg)
@@ -61,9 +62,74 @@ type alias Nat =
     Int
 
 
-fromKey : Player -> Key -> Board
+fromKey : Player -> Key -> Result Error Board
 fromKey current key =
-    empty
+    if 10 == Bytes.width key then
+        key
+            |> decode (Pattern.decoder LE 10)
+            |> Result.fromMaybe NoBitPattern
+            |> Result.andThen (fromPattern current)
+
+    else
+        let
+            width =
+                Bytes.width key
+        in
+        Err <| IncorrectWidth width
+
+
+type Error
+    = IncorrectEncoding Id.Error
+    | IncorrectWidth Int
+    | NoBitPattern
+    | IncorrectPatternWidth Int
+
+
+fromPattern : Player -> Pattern -> Result Error Board
+fromPattern current ps =
+    let
+        width =
+            List.length ps
+    in
+    if 80 == width then
+        let
+            first =
+                List.take 40 ps
+
+            second =
+                List.drop 40 ps
+        in
+        empty
+            |> fillFromPattern current first
+            |> fillFromPattern (Player.opponent current) second
+            |> Ok
+
+    else
+        Err <| IncorrectPatternWidth width
+
+
+fillFromPattern : Player -> Pattern -> Board -> Board
+fillFromPattern =
+    tailrec_fill 1 0
+
+
+tailrec_fill : Point -> Nat -> Player -> Pattern -> Board -> Board
+tailrec_fill p n current pattern b =
+    case pattern of
+        [] ->
+            b
+
+        bit :: tail ->
+            case bit of
+                Zero ->
+                    if n > 0 then
+                        tailrec_fill (p + 1) 0 current tail (placeCheckersAt current p n b)
+
+                    else
+                        tailrec_fill (p + 1) 0 current tail b
+
+                One ->
+                    tailrec_fill p (n + 1) current tail b
 
 
 toKey : Player -> Board -> Key
