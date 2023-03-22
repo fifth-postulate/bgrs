@@ -3,7 +3,8 @@
 SOURCE_DIR=src
 ELM_CODE=$(shell find ${SOURCE_DIR} -name '*.elm')
 LIB_DIR=lib
-TARGETS=${LIB_DIR}/Main.min.js
+SOURCES=Main
+TARGETS=$(addprefix ${LIB_DIR}/,$(addsuffix .min.js,${SOURCES}))
 
 
 all: ${TARGETS}
