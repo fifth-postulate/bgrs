@@ -8,6 +8,10 @@ Project to explore the finer points of backgammon.
 ## Development
 The project is developed with [Rust][language:rust] and [Elm][language:elm].
 
+Furthermore there is a wealth of information gathered at the [accompanying website][project:website].
+
 [language:elm]: https://elm-lang.org/
 [language:rust]: https://www.rust-lang.org/
 [wikipedia:backgammon]: https://en.wikipedia.org/wiki/Backgammon
+[project:website]: https://fifth-postulate.nl/bgrs/
+
